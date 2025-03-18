@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum examBoardTypeEnum {
+  SPECIAL
+  STATE
+  CENTRAL
+}
+
+enum correctAnswerEnum {
+  A
+  B
+  C
+  D
+}
+
+
+model ExamBoard {
+  id        Int      @id @unique @default(autoincrement())
+  examName     String   @db.VarChar(255)
+  examBoardName     String   @db.VarChar(255) 
+  examBoardType     examBoardTypeEnum 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  subjects Subject[]
+  
+  @@index([examName, examBoardName, examBoardType])
+}
+
+
+
+model Subject {
+  id        Int      @id @unique @default(autoincrement())
+  subjectName     String   @db.VarChar(255)
+  examBoardName     String   @db.VarChar(255) 
+  examId     Int
+  
+  exam     ExamBoard  @relation(fields: [examId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  topics Topic[]
+
+  @@index([subjectName, examId])
+}
+
+model Topic {
+  id        Int      @id @unique @default(autoincrement())
+  topicName     String   @db.VarChar(255) 
+  subjectId     Int
+  
+  subject     Subject  @relation(fields: [subjectId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  questions Question[]
+
+  @@index([topicName, subjectId])
+}
+
+
+model Question {
+  id        Int      @id @unique @default(autoincrement())
+  questionText     String   @db.Text() 
+  shortText     String   @db.VarChar(255) 
+
+  
+  answerA     String   @db.Text() 
+  answerB     String   @db.Text() 
+  answerC     String   @db.Text() 
+  answerD     String   @db.Text() 
+
+  answerCorrect     correctAnswerEnum
+  topicId     Int
+  
+  topic     Topic  @relation(fields: [topicId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([shortText, topicId])
+}
+

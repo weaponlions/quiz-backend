@@ -1,9 +1,10 @@
 import { Router } from "express";
-import { createExamBoard } from "../controllers/examboardController";
+import { createExamBoard, getExamBoard } from "../controllers/examboardController";
 
 
 const routes = Router();
 
+routes.get("", getExamBoard);
 routes.post("", createExamBoard);
 
 export default routes;

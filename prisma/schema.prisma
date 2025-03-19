@@ -28,6 +28,7 @@ model ExamBoard {
   examBoardType     examBoardTypeEnum 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  active    Boolean @default(true)
 
   subjects Subject[]
   
@@ -38,13 +39,13 @@ model ExamBoard {
 
 model Subject {
   id        Int      @id @unique @default(autoincrement())
-  subjectName     String   @db.VarChar(255)
-  examBoardName     String   @db.VarChar(255) 
+  subjectName     String   @db.VarChar(255) 
   examId     Int
   
   exam     ExamBoard  @relation(fields: [examId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  active    Boolean @default(true)
 
   topics Topic[]
 
@@ -59,6 +60,7 @@ model Topic {
   subject     Subject  @relation(fields: [subjectId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  active    Boolean @default(true)
 
   questions Question[]
 
@@ -83,6 +85,7 @@ model Question {
   topic     Topic  @relation(fields: [topicId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  active    Boolean @default(true)
 
   @@index([shortText, topicId])
 }

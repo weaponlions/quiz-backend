@@ -10,6 +10,13 @@ export type ExamBoard = {
     examName: string;
 };
 
+
+export type Subject = {
+    subjectName: string;
+    examId: Number;
+    active: Boolean;
+};
+
 export enum StatusCode {
     // Informational Responses (100–199)
     CONTINUE = 100,

@@ -13,3 +13,7 @@ export function jsonResponse<T>(value: Response<T>): Response<T> {
         message: value.message
     }
 } 
+
+export const isObjectEmpty = (obj: Object): boolean => {
+    return (Object.keys(obj).length === 0 && obj.constructor === Object);
+}

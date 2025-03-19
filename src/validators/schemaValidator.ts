@@ -7,5 +7,11 @@ export const examBoardSchema = Joi.object({
     examName: Joi.string().required(),
 });
 
+export const subjectSchema = Joi.object({ 
+    examId: Joi.number().required(),
+    subjectName: Joi.string().required(),
+    active: Joi.boolean().required(),
+});
+
 
 

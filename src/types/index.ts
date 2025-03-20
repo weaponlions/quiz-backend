@@ -17,6 +17,14 @@ export type Subject = {
     active: Boolean;
 };
 
+
+export type Topic = {
+    topicName: string;
+    subjectId: Number;
+    active: Boolean;
+};
+
+
 export enum StatusCode {
     // Informational Responses (100–199)
     CONTINUE = 100,

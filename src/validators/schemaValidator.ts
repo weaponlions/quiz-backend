@@ -14,4 +14,11 @@ export const subjectSchema = Joi.object({
 });
 
 
+export const topicSchema = Joi.object({ 
+    subjectId: Joi.number().required(),
+    topicName: Joi.string().required(),
+    active: Joi.boolean().required(),
+});
+
+
 

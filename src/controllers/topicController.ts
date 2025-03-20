@@ -1,29 +1,29 @@
 import { Request, Response } from "express";
-import { subjectSchema } from "../validators/schemaValidator";
+import { topicSchema } from "../validators/schemaValidator";
 import { PrismaClient } from "@prisma/client";
 import Joi from "joi";
-import { StatusCode, Subject } from "../types";
+import { StatusCode, Topic } from "../types";
 import { isObjectEmpty, jsonResponse } from "../helpers";
 
-export const createSubject = async (req: Request, res: Response) => {
+export const createTopic = async (req: Request, res: Response) => {
     try {
         const prisma = new PrismaClient();
 
-        const joiResult: Joi.ValidationResult<Subject> = subjectSchema.validate(req.body, { abortEarly: false });
+        const joiResult: Joi.ValidationResult<Topic> = topicSchema.validate(req.body, { abortEarly: false });
         if (joiResult.error) {
 
             res.status(StatusCode.BAD_REQUEST).json(jsonResponse<[]>({ code: StatusCode.BAD_REQUEST, data: [], message: joiResult.error.details }))
             return
         }
 
-        await prisma.subject.create({
+        await prisma.topic.create({
             data: {
-                subjectName: joiResult.value.subjectName,
-                exam: { connect: { id: Number(joiResult.value.examId) } },
+                topicName: joiResult.value.topicName,
+                subject: { connect: { id: Number(joiResult.value.subjectId) } },
                 active: Boolean(joiResult.value.active)
             }
         }).then((value) => {
-            res.status(StatusCode.CREATED).json(jsonResponse<Subject[]>({ code: StatusCode.CREATED, data: [value], message: "Subject created successfully" }))
+            res.status(StatusCode.CREATED).json(jsonResponse<Topic[]>({ code: StatusCode.CREATED, data: [value], message: "Topic created successfully" }))
         })
             .catch((err) => {
                 res.status(StatusCode.BAD_REQUEST).json(jsonResponse<[]>({ code: StatusCode.BAD_REQUEST, data: [], message: err }))
@@ -41,48 +41,37 @@ export const createSubject = async (req: Request, res: Response) => {
 }
 
 
-export const getSubject = async (req: Request, res: Response) => {
+export const getTopic = async (req: Request, res: Response) => {
     try {
         const prisma = new PrismaClient();
         let query: { where: Object | undefined } = { where: undefined };
 
         if (isObjectEmpty(req.query) === false) {
-            const { type, value, examId }: { type: "subject", value: string, examId: Number } = req.query as unknown as { type: "subject", value: string, examId: Number };
+            const { search, subjectId }: { search: string | undefined, subjectId: Number | undefined } = req.query as unknown as { search: string | undefined, subjectId: Number | undefined };
 
             const queryArr: Object[] = []
 
-            const { error, value: subjectValue } = Joi.string().validate(value);
-            const { error: e2, value: examIdValue } = Joi.number().validate(examId);
-            if (error || (type !== "subject" && !examId)) {
+            const { error, value: searchValue } = Joi.string().validate(search);
+            const { error: e2, value: subjectIdValue } = Joi.number().validate(subjectId);
+            if (search && error) {
                 res.status(StatusCode.BAD_REQUEST).json(jsonResponse<[]>({ code: StatusCode.BAD_REQUEST, data: [], message: "Invalid query parameters values." }))
                 return;
             }
-            if (e2 && examId) {
+            if (subjectId && e2) {
                 res.status(StatusCode.BAD_REQUEST).json(jsonResponse<[]>({ code: StatusCode.BAD_REQUEST, data: [], message: "Invalid query parameters values2." }))
                 return;
             }
-            if (type === "subject") {
+            if (search) {
                 queryArr.push({
-                    subjectName: {
-                        contains: subjectValue
+                    topicName: {
+                        contains: searchValue
                     },
                 })
             }
-            if (!e2 && examId) {
-                if (queryArr.length > 0) {
-                    queryArr.push({
-                        OR: [{
-                            examId: examIdValue
-                        }]
-                    })
-                }
-                else {
-                    queryArr.push({
-                        examId: {
-                            equals: examIdValue
-                        }
-                    })
-                }
+            if (subjectId) {
+                queryArr.push({
+                    subjectId: subjectIdValue
+                })
             }
             if (queryArr.length > 0) {
                 queryArr.forEach((v) => {
@@ -98,9 +87,9 @@ export const getSubject = async (req: Request, res: Response) => {
         }
         console.log(query)
         console.log(typeof query.where !== "undefined" ? query : {})
-        await prisma.subject.findMany(typeof query.where !== "undefined" ? query as Object : {})
+        await prisma.topic.findMany(typeof query.where !== "undefined" ? query as Object : {})
             .then((value) => {
-                res.status(StatusCode.OK).json(jsonResponse<Subject[]>({ code: StatusCode.OK, data: value, message: "Subject list" }))
+                res.status(StatusCode.OK).json(jsonResponse<Topic[]>({ code: StatusCode.OK, data: value, message: "Topic list" }))
 
             })
             .catch((err) => {

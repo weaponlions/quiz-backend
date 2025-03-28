@@ -13,6 +13,11 @@ enum examBoardTypeEnum {
   CENTRAL
 }
 
+enum roundTypeEnum {
+  MAIN
+  PRELIMS
+}
+
 enum correctAnswerEnum {
   A
   B
@@ -23,18 +28,41 @@ enum correctAnswerEnum {
 
 model ExamBoard {
   id        Int      @id @unique @default(autoincrement())
+
   examName     String   @db.VarChar(255)
-  examBoardName     String   @db.VarChar(255) 
+  examBoardShortName     String   @db.VarChar(255) 
+  examBoardLongName     String   @db.VarChar(255) 
+
+  boardLogo     String   @db.VarChar(255)
+  examLogo     String   @db.VarChar(255) 
+
   examBoardType     examBoardTypeEnum 
+  subjects Subject[]
+  records Round[]
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   active    Boolean @default(true)
 
-  subjects Subject[]
-  
-  @@index([examName, examBoardName, examBoardType])
+  @@index([examName, examBoardType])
 }
 
+model Round {
+  id        Int      @id @unique @default(autoincrement())
+  
+  roundName     String   @db.VarChar(255)
+  sectionName     String   @db.VarChar(255) 
+
+  roundType     roundTypeEnum
+  examId     Int
+  exam     ExamBoard  @relation(fields: [examId], references: [id])
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  active    Boolean @default(true)
+
+  @@index([roundName])
+}
 
 
 model Subject {
@@ -52,6 +80,8 @@ model Subject {
   @@index([subjectName, examId])
 }
 
+
+
 model Topic {
   id        Int      @id @unique @default(autoincrement())
   topicName     String   @db.VarChar(255) 
@@ -66,6 +96,8 @@ model Topic {
 
   @@index([topicName, subjectId])
 }
+
+
 
 
 model Question {

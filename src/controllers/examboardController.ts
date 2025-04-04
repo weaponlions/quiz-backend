@@ -18,9 +18,12 @@ export const createExamBoard = async (req: Request, res: Response) => {
 
         await prisma.examBoard.create({
             data: {
-                examBoardName: joiResult.value.examBoardName,
+                examBoardLongName: joiResult.value.examBoardLongName,
+                examBoardShortName: joiResult.value.examBoardShortName,
+                boardLogo: "",
+                examLogo: "",
                 examName: joiResult.value.examName,
-                examBoardType: joiResult.value.examBoardType
+                examBoardType: joiResult.value.examBoardType,
             }
         }).then((value) => {
             res.status(StatusCode.CREATED).json(jsonResponse<ExamBoard[]>({code: StatusCode.CREATED, data: [value], message: "Record created successfull"}))

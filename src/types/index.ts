@@ -6,7 +6,8 @@ export enum ExamBoardTypeEnum {
 
 export type ExamBoard = {
     examBoardType: 'CENTRAL' | 'SPECIAL' | 'STATE';
-    examBoardName: string;
+    examBoardLongName: string;
+    examBoardShortName: string;
     examName: string;
 };
 

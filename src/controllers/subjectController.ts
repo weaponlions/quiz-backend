@@ -16,11 +16,12 @@ export const createSubject = async (req: Request, res: Response) => {
             return
         }
 
-        await prisma.subject.create({
+        await prisma.examSubject.create({
             data: {
                 subjectName: joiResult.value.subjectName,
                 exam: { connect: { id: Number(joiResult.value.examId) } },
-                active: Boolean(joiResult.value.active)
+                active: Boolean(joiResult.value.active),
+
             }
         }).then((value) => {
             res.status(StatusCode.CREATED).json(jsonResponse<Subject[]>({ code: StatusCode.CREATED, data: [value], message: "Subject created successfully" }))
@@ -98,7 +99,7 @@ export const getSubject = async (req: Request, res: Response) => {
         }
         console.log(query)
         console.log(typeof query.where !== "undefined" ? query : {})
-        await prisma.subject.findMany(typeof query.where !== "undefined" ? query as Object : {})
+        await prisma.examSubject.findMany(typeof query.where !== "undefined" ? query as Object : {})
             .then((value) => {
                 res.status(StatusCode.OK).json(jsonResponse<Subject[]>({ code: StatusCode.OK, data: value, message: "Subject list" }))
 

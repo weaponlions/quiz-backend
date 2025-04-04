@@ -13,6 +13,11 @@ enum examBoardTypeEnum {
   CENTRAL
 }
 
+enum accessTypeEnum {
+  PUBLIC
+  PRIVATE
+}
+
 enum roundTypeEnum {
   MAIN
   PRELIMS
@@ -23,6 +28,14 @@ enum correctAnswerEnum {
   B
   C
   D
+}
+
+model User {
+  id        Int      @id @unique @default(autoincrement())
+  username  String   @db.VarChar(255)
+  password  String   @db.VarChar(255)
+  subject ExamSubject[]
+  round ExamRound[]
 }
 
 
@@ -37,8 +50,8 @@ model ExamBoard {
   examLogo     String   @db.VarChar(255) 
 
   examBoardType     examBoardTypeEnum 
-  subjects Subject[]
-  records Round[]
+  subjects ExamSubject[]
+  records ExamRound[]
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -47,7 +60,7 @@ model ExamBoard {
   @@index([examName, examBoardType])
 }
 
-model Round {
+model ExamRound {
   id        Int      @id @unique @default(autoincrement())
   
   roundName     String   @db.VarChar(255)
@@ -60,12 +73,17 @@ model Round {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   active    Boolean @default(true)
+  ownerId     Int
+  owner     User?  @relation(fields: [ownerId], references: [id])
+
+  accessType accessTypeEnum @default(PRIVATE)
 
   @@index([roundName])
+  Question TopicQuestion[]
 }
 
 
-model Subject {
+model ExamSubject {
   id        Int      @id @unique @default(autoincrement())
   subjectName     String   @db.VarChar(255) 
   examId     Int
@@ -75,24 +93,27 @@ model Subject {
   updatedAt DateTime @updatedAt
   active    Boolean @default(true)
 
-  topics Topic[]
+  topics SubjectTopic[]
+  ownerId     Int
+  owner     User?  @relation(fields: [ownerId], references: [id])
+  accessType accessTypeEnum @default(PRIVATE)
 
   @@index([subjectName, examId])
 }
 
 
 
-model Topic {
+model SubjectTopic {
   id        Int      @id @unique @default(autoincrement())
   topicName     String   @db.VarChar(255) 
   subjectId     Int
   
-  subject     Subject  @relation(fields: [subjectId], references: [id])
+  subject     ExamSubject  @relation(fields: [subjectId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   active    Boolean @default(true)
 
-  questions Question[]
+  questions TopicQuestion[]
 
   @@index([topicName, subjectId])
 }
@@ -100,7 +121,7 @@ model Topic {
 
 
 
-model Question {
+model TopicQuestion {
   id        Int      @id @unique @default(autoincrement())
   questionText     String   @db.Text() 
   shortText     String   @db.VarChar(255) 
@@ -113,12 +134,17 @@ model Question {
 
   answerCorrect     correctAnswerEnum
   topicId     Int
+  roundId     Int
   
-  topic     Topic  @relation(fields: [topicId], references: [id])
+  topic     SubjectTopic?  @relation(fields: [topicId], references: [id])
+  round     ExamRound?  @relation(fields: [roundId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   active    Boolean @default(true)
 
+  year      String  @db.VarChar(5)
+
   @@index([shortText, topicId])
 }
+
 

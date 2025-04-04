@@ -16,7 +16,7 @@ export const createTopic = async (req: Request, res: Response) => {
             return
         }
 
-        await prisma.topic.create({
+        await prisma.subjectTopic.create({
             data: {
                 topicName: joiResult.value.topicName,
                 subject: { connect: { id: Number(joiResult.value.subjectId) } },
@@ -87,7 +87,7 @@ export const getTopic = async (req: Request, res: Response) => {
         }
         console.log(query)
         console.log(typeof query.where !== "undefined" ? query : {})
-        await prisma.topic.findMany(typeof query.where !== "undefined" ? query as Object : {})
+        await prisma.subjectTopic.findMany(typeof query.where !== "undefined" ? query as Object : {})
             .then((value) => {
                 res.status(StatusCode.OK).json(jsonResponse<Topic[]>({ code: StatusCode.OK, data: value, message: "Topic list" }))
 

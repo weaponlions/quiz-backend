@@ -20,19 +20,19 @@ export const createExamBoard = async (req: Request, res: Response) => {
             data: {
                 examBoardLongName: joiResult.value.examBoardLongName,
                 examBoardShortName: joiResult.value.examBoardShortName,
-                boardLogo: "",
-                examLogo: "",
+                boardLogo: joiResult.value.boardLogo,
+                examLogo: joiResult.value.examLogo,
                 examName: joiResult.value.examName,
                 examBoardType: joiResult.value.examBoardType,
             }
         }).then((value) => {
             res.status(StatusCode.CREATED).json(jsonResponse<ExamBoard[]>({code: StatusCode.CREATED, data: [value], message: "Record created successfull"}))
         })
-        .catch((err) => {
+        .catch((err) => { 
             res.status(StatusCode.BAD_REQUEST).json(jsonResponse<[]>({code: StatusCode.BAD_REQUEST, data: [], message: err}))
         })
 
-    } catch (error) {
+    } catch (error) { 
         if (error instanceof Error) {
 
 

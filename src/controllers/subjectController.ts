@@ -21,7 +21,8 @@ export const createSubject = async (req: Request, res: Response) => {
                 subjectName: joiResult.value.subjectName,
                 exam: { connect: { id: Number(joiResult.value.examId) } },
                 active: Boolean(joiResult.value.active),
-
+                accessType: joiResult.value.accessType,
+                owner: { connect: {id: Number(joiResult.value.ownerId) }}                
             }
         }).then((value) => {
             res.status(StatusCode.CREATED).json(jsonResponse<Subject[]>({ code: StatusCode.CREATED, data: [value], message: "Subject created successfully" }))

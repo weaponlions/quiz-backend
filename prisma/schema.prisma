@@ -30,121 +30,151 @@ enum correctAnswerEnum {
   D
 }
 
-model User {
-  id        Int      @id @unique @default(autoincrement())
-  username  String   @db.VarChar(255)
-  password  String   @db.VarChar(255)
-  subject ExamSubject[]
-  round ExamRound[]
+enum userTypeEnum {
+  ADMIN
+  CREATOR
+  STUDENT
 }
 
+model User {
+  id       Int           @id @default(autoincrement())
+  username String        @unique @db.VarChar(255)
+  password String        @db.VarChar(255)
+  userType  userTypeEnum  @default(STUDENT)
+
+  subject  ExamSubject[]
+  round    ExamRound[]
+  attempts AttemptedTest[]
+}
 
 model ExamBoard {
-  id        Int      @id @unique @default(autoincrement())
+  id                 Int               @id @default(autoincrement())
+  examName           String            @db.VarChar(255)
+  examBoardShortName String            @unique @db.VarChar(255)
+  examBoardLongName  String            @db.VarChar(255)
+  boardLogo          String            @db.VarChar(255)
+  examLogo           String            @db.VarChar(255)
+  examBoardType      examBoardTypeEnum
+  subjects           ExamSubject[]
+  records            ExamRound[]
+  attempts           AttemptedTest[]
 
-  examName     String   @db.VarChar(255)
-  examBoardShortName     String   @db.VarChar(255) 
-  examBoardLongName     String   @db.VarChar(255) 
-
-  boardLogo     String   @db.VarChar(255)
-  examLogo     String   @db.VarChar(255) 
-
-  examBoardType     examBoardTypeEnum 
-  subjects ExamSubject[]
-  records ExamRound[]
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  active    Boolean @default(true)
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  active             Boolean           @default(true)
 
   @@index([examName, examBoardType])
 }
 
-model ExamRound {
-  id        Int      @id @unique @default(autoincrement())
-  
-  roundName     String   @db.VarChar(255)
-  sectionName     String   @db.VarChar(255) 
-
-  roundType     roundTypeEnum
-  examId     Int
-  exam     ExamBoard  @relation(fields: [examId], references: [id])
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  active    Boolean @default(true)
-  ownerId     Int
-  owner     User?  @relation(fields: [ownerId], references: [id])
-
-  accessType accessTypeEnum @default(PRIVATE)
-
-  @@index([roundName])
-  Question TopicQuestion[]
-}
-
-
 model ExamSubject {
-  id        Int      @id @unique @default(autoincrement())
-  subjectName     String   @db.VarChar(255) 
-  examId     Int
-  
-  exam     ExamBoard  @relation(fields: [examId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  active    Boolean @default(true)
-
-  topics SubjectTopic[]
+  id          Int              @id @default(autoincrement())
+  subjectName String           @db.VarChar(255)
+  examId      Int
+  exam        ExamBoard        @relation(fields: [examId], references: [id], onDelete: Cascade)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  active      Boolean          @default(true)
+  topics      SubjectTopic[]
   ownerId     Int
-  owner     User?  @relation(fields: [ownerId], references: [id])
-  accessType accessTypeEnum @default(PRIVATE)
+  owner       User?            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  accessType  accessTypeEnum   @default(PRIVATE)
+  attempts    AttemptedTest[]
 
+  @@unique([subjectName, examId])
   @@index([subjectName, examId])
 }
 
-
-
 model SubjectTopic {
-  id        Int      @id @unique @default(autoincrement())
-  topicName     String   @db.VarChar(255) 
-  subjectId     Int
-  
-  subject     ExamSubject  @relation(fields: [subjectId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  active    Boolean @default(true)
+  id         Int              @id @default(autoincrement())
+  topicName  String           @db.VarChar(255)
+  subjectId  Int
+  subject    ExamSubject      @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+  active     Boolean          @default(true)
+  questions  TopicQuestion[]
+  attempts   AttemptedTest[]
 
-  questions TopicQuestion[]
-
+  @@unique([topicName, subjectId])
   @@index([topicName, subjectId])
 }
 
+model ExamRound {
+  id          Int              @id @default(autoincrement())
+  roundName   String           @db.VarChar(255)
+  sectionName String           @db.VarChar(255)
+  roundType   roundTypeEnum
+  examId      Int
+  exam        ExamBoard        @relation(fields: [examId], references: [id], onDelete: Cascade)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  active      Boolean          @default(true)
+  ownerId     Int
+  owner       User?            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  accessType  accessTypeEnum   @default(PRIVATE)
+  Question    TopicQuestion[]
+  attempts    AttemptedTest[]
 
-
-
-model TopicQuestion {
-  id        Int      @id @unique @default(autoincrement())
-  questionText     String   @db.Text() 
-  shortText     String   @db.VarChar(255) 
-
-  
-  answerA     String   @db.Text() 
-  answerB     String   @db.Text() 
-  answerC     String   @db.Text() 
-  answerD     String   @db.Text() 
-
-  answerCorrect     correctAnswerEnum
-  topicId     Int
-  roundId     Int
-  
-  topic     SubjectTopic?  @relation(fields: [topicId], references: [id])
-  round     ExamRound?  @relation(fields: [roundId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  active    Boolean @default(true)
-
-  year      String  @db.VarChar(5)
-
-  @@index([shortText, topicId])
+  @@unique([roundName, sectionName, examId])
+  @@index([roundName])
 }
 
+model TopicQuestion {
+  id            Int               @id @default(autoincrement())
+  questionText  String            @db.Text()
+  questionTitle String            @db.VarChar(255)
+  answerA       String            @db.Text()
+  answerB       String            @db.Text()
+  answerC       String            @db.Text()
+  answerD       String            @db.Text()
+  answerCorrect correctAnswerEnum
+  topicId       Int
+  roundId       Int
+  topic         SubjectTopic      @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  round         ExamRound         @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  active        Boolean           @default(true)
+  questionYear  String            @db.VarChar(5)
+  answers       AnsweredQuestion[]
 
+  @@index([questionTitle, topicId])
+}
+
+model AttemptedTest {
+  id          Int           @id @default(autoincrement())
+  userId      Int
+  roundId     Int
+  subjectId   Int?
+  topicId     Int?
+  examId      Int?
+  category    String?       @db.VarChar(255)
+  score       Float?
+  timeTaken   Int?          // in seconds
+  submittedAt DateTime      @default(now())
+
+  user        User          @relation(fields: [userId], references: [id])
+  round       ExamRound     @relation(fields: [roundId], references: [id])
+  subject     ExamSubject?  @relation(fields: [subjectId], references: [id])
+  topic       SubjectTopic? @relation(fields: [topicId], references: [id])
+  exam        ExamBoard?    @relation(fields: [examId], references: [id])
+  answers     AnsweredQuestion[]
+
+  @@index([userId, roundId])
+}
+
+model AnsweredQuestion {
+  id              Int               @id @default(autoincrement())
+  attemptedTestId Int
+  questionId      Int
+  chosenOption    correctAnswerEnum? // A, B, C, D or NULL if unattempted
+  correctOption   correctAnswerEnum
+  isCorrect       Boolean
+  attempted       Boolean           @default(false)
+
+  attemptedTest   AttemptedTest     @relation(fields: [attemptedTestId], references: [id])
+  question        TopicQuestion     @relation(fields: [questionId], references: [id])
+
+  @@unique([attemptedTestId, questionId])
+  @@index([attemptedTestId, questionId])
+}

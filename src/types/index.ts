@@ -1,3 +1,5 @@
+import { accessTypeEnum, correctAnswerEnum, roundTypeEnum } from "@prisma/client";
+
 export enum ExamBoardTypeEnum {
     SPECIAL = "SPECIAL",
     STATE = "STATE",
@@ -9,13 +11,17 @@ export type ExamBoard = {
     examBoardLongName: string;
     examBoardShortName: string;
     examName: string;
+    boardLogo: string;
+    examLogo: string;
 };
 
 
 export type Subject = {
     subjectName: string;
     examId: Number;
-    active: Boolean;
+    ownerId: Number;
+    active: Boolean; 
+    accessType: accessTypeEnum;
 };
 
 
@@ -25,6 +31,35 @@ export type Topic = {
     active: Boolean;
 };
 
+export type Round = {
+    roundName: string;
+    sectionName: string;
+    roundType: roundTypeEnum
+    examId: number;
+    ownerId: number;
+    accessType?: accessTypeEnum 
+    active?: boolean;
+  };
+  
+  
+
+  export type TopicQuestion = {
+    id: number;
+    questionText: string;
+    questionTitle: string;
+    answerA: string;
+    answerB: string;
+    answerC: string;
+    answerD: string;
+    answerCorrect: correctAnswerEnum;
+    topicId: number;
+    roundId: number;
+    createdAt: Date;
+    updatedAt: Date;
+    active: boolean;
+    questionYear: string;
+  };
+  
 
 export enum StatusCode {
     // Informational Responses (100–199)

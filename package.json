@@ -16,9 +16,11 @@
       "@eslint/compat": "^1.2.7",
       "@eslint/eslintrc": "^3.3.0",
       "@eslint/js": "^9.22.0",
+      "@types/bcrypt": "^5.0.2",
       "@types/cors": "^2.8.17",
       "@types/express": "^5.0.0",
       "@types/joi": "^17.2.2",
+      "@types/jsonwebtoken": "^9.0.9",
       "@types/node": "^16.18.126",
       "@types/winston": "^2.4.4",
       "@typescript-eslint/eslint-plugin": "^8.26.0",
@@ -34,9 +36,11 @@
    },
    "dependencies": {
       "@prisma/client": "^6.4.1",
+      "bcrypt": "^5.1.1",
       "cors": "^2.8.5",
       "express": "^4.21.2",
       "joi": "^17.13.3",
+      "jsonwebtoken": "^9.0.2",
       "mysql": "^2.18.1",
       "winston": "^3.17.0",
       "winston-daily-rotate-file": "^5.0.0"

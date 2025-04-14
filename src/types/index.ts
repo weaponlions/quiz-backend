@@ -1,4 +1,4 @@
-import { accessTypeEnum, correctAnswerEnum, roundTypeEnum } from "@prisma/client";
+import { accessTypeEnum, correctAnswerEnum, roundTypeEnum, userTypeEnum } from "@prisma/client";
 
 export enum ExamBoardTypeEnum {
     SPECIAL = "SPECIAL",
@@ -13,6 +13,7 @@ export type ExamBoard = {
     examName: string;
     boardLogo: string;
     examLogo: string;
+    active: boolean;
 };
 
 
@@ -59,6 +60,13 @@ export type Round = {
     active: boolean;
     questionYear: string;
   };
+
+  export type User = {
+    id: number;
+    username: string;
+    password: string;
+    userType: userTypeEnum
+  }
   
 
 export enum StatusCode {

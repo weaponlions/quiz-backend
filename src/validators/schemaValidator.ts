@@ -1,22 +1,23 @@
 import Joi from "joi";
 import { accessTypeEnum, examBoardTypeEnum, roundTypeEnum, userTypeEnum } from "@prisma/client";
-import { Round, TopicQuestion } from "../types";
+import { ExamBoard, Round, Subject, TopicQuestion, User } from "../types";
 
 
 export const updateUserRoleSchema = Joi.object({
     userType: Joi.string().valid("ADMIN", "CREATOR", "STUDENT").required(),
   });   
 
-export const examBoardSchema = Joi.object({
+export const examBoardSchema = Joi.object<ExamBoard>({
     examBoardType: Joi.string().valid(examBoardTypeEnum.CENTRAL, examBoardTypeEnum.SPECIAL, examBoardTypeEnum.STATE).required(),
     examBoardLongName: Joi.string().required(),
     examBoardShortName: Joi.string().required(),
     examName: Joi.string().required(),
     boardLogo: Joi.string().default(""),
-    examLogo: Joi.string().default("")
+    examLogo: Joi.string().default(""),
+    active: Joi.boolean().required()
 });
 
-export const subjectSchema = Joi.object({ 
+export const subjectSchema = Joi.object<Subject>({ 
     examId: Joi.number().required(),
     ownerId: Joi.number().required(),
     subjectName: Joi.string().required(),
@@ -66,4 +67,10 @@ export const authSchema = Joi.object({
     active: Joi.boolean().optional(),
   });
 
+  export const userSchema = Joi.object<User>({
+    id: Joi.number().required(),
+    username: Joi.string().min(5).max(255).required(),
+    password: Joi.string().min(5).max(255).required(),
+    userType: Joi.string().valid(userTypeEnum.ADMIN, userTypeEnum.CREATOR, userTypeEnum.STUDENT).required()
+  });
   

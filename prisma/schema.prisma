@@ -130,8 +130,8 @@ model TopicQuestion {
   answerCorrect correctAnswerEnum
   topicId       Int
   roundId       Int
-  topic         SubjectTopic      @relation(fields: [topicId], references: [id], onDelete: Cascade)
-  round         ExamRound         @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  topic         SubjectTopic?      @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  round         ExamRound?         @relation(fields: [roundId], references: [id], onDelete: Cascade)
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
   active        Boolean           @default(true)

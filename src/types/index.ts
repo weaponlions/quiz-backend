@@ -68,6 +68,27 @@ export type Round = {
     userType: userTypeEnum
   }
   
+  export type AttemptedTest = {
+    userId: number;
+    roundId: number;
+    subjectId: number | null;
+    topicId: number | null;
+    examId: number | null;
+    category: string | null;
+    score: number | null;
+    timeTaken: number | null;
+    submittedAt: Date | null;
+  };
+
+  export type AnsweredQuestion = {
+    attemptedTestId: number;
+    questionId: number;
+    chosenOption: "A" | "B" | "C" | "D" | null;
+    correctOption: "A" | "B" | "C" | "D";
+    isCorrect: boolean;
+    attempted: boolean;
+  };
+  
 
 export enum StatusCode {
     // Informational Responses (100–199)

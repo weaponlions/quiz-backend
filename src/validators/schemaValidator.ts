@@ -1,6 +1,6 @@
 import Joi from "joi";
 import { accessTypeEnum, examBoardTypeEnum, roundTypeEnum, userTypeEnum } from "@prisma/client";
-import { ExamBoard, Round, Subject, TopicQuestion, User } from "../types";
+import { AnsweredQuestion, AttemptedTest, ExamBoard, Round, Subject, TopicQuestion, User } from "../types";
 
 
 export const updateUserRoleSchema = Joi.object({
@@ -72,5 +72,34 @@ export const authSchema = Joi.object({
     username: Joi.string().min(5).max(255).required(),
     password: Joi.string().min(5).max(255).required(),
     userType: Joi.string().valid(userTypeEnum.ADMIN, userTypeEnum.CREATOR, userTypeEnum.STUDENT).required()
+  });
+  
+
+  export const attemptedTestSchema = Joi.object<AttemptedTest>({
+    userId: Joi.number().required(),
+    roundId: Joi.number().required(),
+    subjectId: Joi.number().optional(),
+    topicId: Joi.number().optional(),
+    examId: Joi.number().optional(),
+    category: Joi.string().optional(),
+    score: Joi.number().optional(),
+    timeTaken: Joi.number().optional(),
+    submittedAt: Joi.date().optional()
+  });
+  
+
+  export const updateAttemptedTestSchema = Joi.object({
+    score: Joi.number().optional(),
+    timeTaken: Joi.number().optional(),
+    submittedAt: Joi.date().optional()
+  });
+
+  export const answeredQuestionSchema = Joi.object<AnsweredQuestion>({
+    attemptedTestId: Joi.number().required(),
+    questionId: Joi.number().required(),
+    chosenOption: Joi.string().valid("A", "B", "C", "D").allow(null),
+    correctOption: Joi.string().valid("A", "B", "C", "D").required(),
+    isCorrect: Joi.boolean().required(),
+    attempted: Joi.boolean().default(false),
   });
   

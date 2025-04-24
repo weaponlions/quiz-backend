@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
+  url      = "mysql://root:@localhost:3306/quizz"
 }
 
 enum examBoardTypeEnum {
@@ -49,8 +49,8 @@ model User {
 
 model ExamBoard {
   id                 Int               @id @default(autoincrement())
-  examName           String            @db.VarChar(255)
-  examBoardShortName String            @unique @db.VarChar(255)
+  examName           String            @unique @db.VarChar(255)
+  examBoardShortName String            @db.VarChar(255)
   examBoardLongName  String            @db.VarChar(255)
   boardLogo          String            @db.VarChar(255)
   examLogo           String            @db.VarChar(255)
@@ -79,7 +79,6 @@ model ExamSubject {
   owner       User?            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   accessType  accessTypeEnum   @default(PRIVATE)
   attempts    AttemptedTest[]
-
   @@unique([subjectName, examId])
   @@index([subjectName, examId])
 }

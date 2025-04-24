@@ -36,7 +36,6 @@ export const createExamBoard = async (req: Request, res: Response) => {
     } catch (error) {
         if (error instanceof Error) {
 
-
         } else {
             console.log("An unexpected error occurred.");
             res.status(StatusCode.INTERNAL_SERVER_ERROR).json(jsonResponse<[]>({ code: StatusCode.INTERNAL_SERVER_ERROR, data: [], message: "An unexpected error occurred." }))
@@ -96,59 +95,85 @@ export const updateExamBoard = async (req: Request<{ examId: number }>, res: Res
 
 export const getExamBoard = async (req: Request, res: Response) => {
     try {
-        const prisma = new PrismaClient();
-        let query: undefined | Object = undefined;
-
-        if (isObjectEmpty(req.query) === false) {
-            if (req.query.type && req.query.value) {
-                const { error, value } = Joi.string().validate(req.query.value);
-                if (error || (["board", "exam"].includes(req.query.type as string)) === false) {
-                    res.status(StatusCode.BAD_REQUEST).json(jsonResponse<[]>({ code: StatusCode.BAD_REQUEST, data: [], message: "Invalid query parameters values." }))
-                    return;
-                }
-                if (req.query.type === "board") {
-                    query = {
-                        where: {
-                            examBoardName: {
-                                contains: value
-                            },
-                            AND: { active: true }
-                        }
-                    }
-                }
-                else if (req.query.type === "exam") {
-                    query = {
-                        where: {
-                            examName: {
-                                contains: value
-                            },
-                            AND: { active: true }
-                        }
-                    }
-                }
-            }
-            else {
-                res.status(StatusCode.BAD_REQUEST).json(jsonResponse<[]>({ code: StatusCode.BAD_REQUEST, data: [], message: "Invalid query parameters" }))
-                return;
-            }
-        }
-
-        await prisma.examBoard.findMany(typeof query === "undefined" ? { where: { active: true }} : query)
-            .then((value) => {
-                res.status(StatusCode.OK).json(jsonResponse<ExamBoard[]>({ code: StatusCode.OK, data: value, message: "Record list" }))
-
-            })
-            .catch((err) => {
-                res.status(StatusCode.BAD_REQUEST).json(jsonResponse<[]>({ code: StatusCode.BAD_REQUEST, data: [], message: err }))
-            })
-
-    } catch (error) {
-        if (error instanceof Error) {
-
-
+      const prisma = new PrismaClient();
+      let query: undefined | Object = undefined;
+  
+      if (!isObjectEmpty(req.query)) {
+        if (req.query.type && req.query.value) {
+          const { error, value } = Joi.string().validate(req.query.value);
+          if (
+            error ||
+            !["board", "exam"].includes(req.query.type as string)
+          ) {
+            res.status(StatusCode.BAD_REQUEST).json(
+              jsonResponse<[]>({
+                code: StatusCode.BAD_REQUEST,
+                data: [],
+                message: "Invalid query parameters values.",
+              })
+            );
+            return;
+          }
+  
+          // Remove `active: true` condition to allow both active and inactive
+          if (req.query.type === "board") {
+            query = {
+              where: {
+                examBoardName: {
+                  contains: value,
+                },
+              },
+            };
+          } else if (req.query.type === "exam") {
+            query = {
+              where: {
+                examName: {
+                  contains: value,
+                },
+              },
+            };
+          }
         } else {
-            console.log("An unexpected error occurred.");
-            res.status(StatusCode.INTERNAL_SERVER_ERROR).json(jsonResponse<[]>({ code: StatusCode.INTERNAL_SERVER_ERROR, data: [], message: "An unexpected error occurred." }))
+          res.status(StatusCode.BAD_REQUEST).json(
+            jsonResponse<[]>({
+              code: StatusCode.BAD_REQUEST,
+              data: [],
+              message: "Invalid query parameters",
+            })
+          );
+          return;
         }
+      }
+  
+      await prisma.examBoard
+        .findMany(query || {}) // <-- this line now returns all records
+        .then((value) => {
+          res.status(StatusCode.OK).json(
+            jsonResponse<ExamBoard[]>({
+              code: StatusCode.OK,
+              data: value,
+              message: "Record list",
+            })
+          );
+        })
+        .catch((err) => {
+          res.status(StatusCode.BAD_REQUEST).json(
+            jsonResponse<[]>({
+              code: StatusCode.BAD_REQUEST,
+              data: [],
+              message: err,
+            })
+          );
+        });
+    } catch (error) {
+      console.log("An unexpected error occurred.");
+      res.status(StatusCode.INTERNAL_SERVER_ERROR).json(
+        jsonResponse<[]>({
+          code: StatusCode.INTERNAL_SERVER_ERROR,
+          data: [],
+          message: "An unexpected error occurred.",
+        })
+      );
     }
-}
+  };
+  

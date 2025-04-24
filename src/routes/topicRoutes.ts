@@ -1,4 +1,4 @@
-import { getTopic, createTopic } from "../controllers/topicController"; 
+import { getTopic, createTopic} from "../controllers/topicController"; 
 import { Router } from "express";  
 
 

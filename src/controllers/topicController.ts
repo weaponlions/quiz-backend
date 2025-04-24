@@ -107,3 +107,10 @@ export const getTopic = async (req: Request, res: Response) => {
     }
 }
 
+
+
+
+
+
+
+

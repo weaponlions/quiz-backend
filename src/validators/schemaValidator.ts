@@ -19,7 +19,7 @@ export const examBoardSchema = Joi.object<ExamBoard>({
 
 export const subjectSchema = Joi.object<Subject>({ 
     examId: Joi.number().required(),
-    ownerId: Joi.number().required(),
+    ownerId: Joi.number().default(1),
     subjectName: Joi.string().required(),
     active: Joi.boolean().required(),
     accessType: Joi.string().valid(accessTypeEnum.PRIVATE, accessTypeEnum.PUBLIC).required()

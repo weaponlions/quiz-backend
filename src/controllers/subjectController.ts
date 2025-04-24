@@ -90,77 +90,104 @@ export const updateSubject = async (req: Request<{ subjectId: number }>, res: Re
 
 export const getSubject = async (req: Request, res: Response) => {
     try {
-        const prisma = new PrismaClient();
-        let query: { where: Object | undefined } = { where: { active: true } };
-
-        if (isObjectEmpty(req.query) === false) {
-            const { subjectName, examId }: { subjectName: string, examId: number } = req.query as unknown as { subjectName: string, examId: number };
-
-            const queryArr: Object[] = []
-
-            const { error, value: subjectValue } = Joi.string().validate(subjectName);
-            const { error: e2, value: examIdValue } = Joi.number().validate(examId);
-            if (error && subjectName) {
-                res.status(StatusCode.BAD_REQUEST).json(jsonResponse<[]>({ code: StatusCode.BAD_REQUEST, data: [], message: "Invalid query parameters values.", other: error.details }))
-                return;
-            }
-            if (e2 && examId) {
-                res.status(StatusCode.BAD_REQUEST).json(jsonResponse<[]>({ code: StatusCode.BAD_REQUEST, data: [], message: "Invalid query parameters values2.", other: e2.details }))
-                return;
-            }
-            if (!error && subjectName) {
-                queryArr.push({
-                    subjectName: {
-                        contains: subjectValue
-                    },
-                })
-            }
-            if (!e2 && examId) {
-                if (queryArr.length > 0) {
-                    queryArr.push({
-                        OR: [{
-                            examId: examIdValue
-                        }]
-                    })
-                }
-                else {
-                    queryArr.push({
-                        examId: {
-                            equals: examIdValue
-                        }
-                    })
-                }
-            }
-            if (queryArr.length > 0) {
-                queryArr.forEach((v) => {
-                    query = {
-                        where: {
-                            ...((query.where) ? query.where : {}),
-                            ...v
-                        }
-                    }
-                })
-            }
-
+      const prisma = new PrismaClient();
+      let query: { where: any } = { where: {} };
+  
+      if (!isObjectEmpty(req.query)) {
+        const {
+          subjectName,
+          examId,
+          active,
+        }: { subjectName?: string; examId?: number; active?: string } =
+          req.query as any;
+  
+        const queryArr: any[] = [];
+  
+        // Validate inputs
+        const { error: nameError, value: subjectValue } = Joi.string().validate(subjectName);
+        const { error: examError, value: examIdValue } = Joi.number().validate(examId);
+        const { error: activeError, value: activeValue } = Joi.boolean().truthy("true").falsy("false").validate(active);
+  
+        if (nameError && subjectName) {
+          return res.status(StatusCode.BAD_REQUEST).json(
+            jsonResponse<[]>({
+              code: StatusCode.BAD_REQUEST,
+              data: [],
+              message: "Invalid query parameter: subjectName",
+              other: nameError.details,
+            })
+          );
         }
-
-        await prisma.examSubject.findMany(typeof query.where !== "undefined" ? query as Object : { where: { active: true } })
-            .then((value) => {
-                res.status(StatusCode.OK).json(jsonResponse<Subject[]>({ code: StatusCode.OK, data: value, message: "Subject list" }))
-
+  
+        if (examError && examId) {
+          return res.status(StatusCode.BAD_REQUEST).json(
+            jsonResponse<[]>({
+              code: StatusCode.BAD_REQUEST,
+              data: [],
+              message: "Invalid query parameter: examId",
+              other: examError.details,
             })
-            .catch((err) => {
-                res.status(StatusCode.BAD_REQUEST).json(jsonResponse<[]>({ code: StatusCode.BAD_REQUEST, data: [], message: err }))
+          );
+        }
+  
+        if (activeError && active !== undefined) {
+          return res.status(StatusCode.BAD_REQUEST).json(
+            jsonResponse<[]>({
+              code: StatusCode.BAD_REQUEST,
+              data: [],
+              message: "Invalid query parameter: active",
+              other: activeError.details,
             })
-
+          );
+        }
+  
+        if (!nameError && subjectName) {
+          queryArr.push({
+            subjectName: {
+              contains: subjectValue,
+              mode: "insensitive", // optional: makes it case-insensitive
+            },
+          });
+        }
+  
+        if (!examError && examId) {
+          queryArr.push({
+            examId: examIdValue,
+          });
+        }
+  
+        if (!activeError && active !== undefined) {
+          queryArr.push({
+            active: activeValue,
+          });
+        }
+  
+        // Combine all conditions
+        if (queryArr.length > 0) {
+          query.where = {
+            ...queryArr.reduce((acc, item) => ({ ...acc, ...item }), {}),
+          };
+        }
+      }
+  
+      const subjects = await prisma.examSubject.findMany(query);
+  
+      return res.status(StatusCode.OK).json(
+        jsonResponse<Subject[]>({
+          code: StatusCode.OK,
+          data: subjects,
+          message: "Subject list",
+        })
+      );
     } catch (error) {
-        if (error instanceof Error) {
-
-
-        } else {
-            console.log("An unexpected error occurred.");
-            res.status(StatusCode.INTERNAL_SERVER_ERROR).json(jsonResponse<[]>({ code: StatusCode.INTERNAL_SERVER_ERROR, data: [], message: "An unexpected error occurred." }))
-        }
+      console.error("Unexpected error in getSubject:", error);
+      return res.status(StatusCode.INTERNAL_SERVER_ERROR).json(
+        jsonResponse<[]>({
+          code: StatusCode.INTERNAL_SERVER_ERROR,
+          data: [],
+          message: "An unexpected error occurred.",
+        })
+      );
     }
-}
-
+  };
+  

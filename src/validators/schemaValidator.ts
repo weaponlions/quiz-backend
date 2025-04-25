@@ -68,7 +68,6 @@ export const authSchema = Joi.object({
   });
 
   export const userSchema = Joi.object<User>({
-    id: Joi.number().required(),
     username: Joi.string().min(5).max(255).required(),
     password: Joi.string().min(5).max(255).required(),
     userType: Joi.string().valid(userTypeEnum.ADMIN, userTypeEnum.CREATOR, userTypeEnum.STUDENT).required()

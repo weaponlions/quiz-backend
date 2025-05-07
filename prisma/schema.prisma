@@ -127,8 +127,8 @@ model TopicQuestion {
   answerC       String            @db.Text()
   answerD       String            @db.Text()
   answerCorrect correctAnswerEnum
-  topicId       Int
-  roundId       Int
+  topicId       Int?
+  roundId       Int?
   topic         SubjectTopic?      @relation(fields: [topicId], references: [id], onDelete: Cascade)
   round         ExamRound?         @relation(fields: [roundId], references: [id], onDelete: Cascade)
   createdAt     DateTime          @default(now())

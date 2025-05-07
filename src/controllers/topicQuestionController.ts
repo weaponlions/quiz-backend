@@ -29,8 +29,8 @@ export const createTopicQuestion = async (req: Request, res: Response) => {
         answerD: joiResult.value.answerD,
         answerCorrect: joiResult.value.answerCorrect,
         questionYear: joiResult.value.questionYear,
-        topic: { connect: { id: Number(joiResult.value.topicId) } },
-        round: { connect: { id: Number(joiResult.value.roundId) } },
+        ...(joiResult.value.topicId !== null && {topic: { connect: { id: Number(joiResult.value.topicId) } }}),
+        ...(joiResult.value.roundId !== null && {round: { connect: { id: Number(joiResult.value.roundId) } }}),
         active: Boolean(joiResult.value.active),
       }
     }).then((value) => {

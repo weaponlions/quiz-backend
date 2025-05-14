@@ -4,7 +4,7 @@ import { PrismaClient } from "@prisma/client";
 import Joi from "joi";
 import { StatusCode, Topic } from "../types";
 import { isObjectEmpty, jsonResponse } from "../helpers";
-
+const prisma = new PrismaClient();
 export const createTopic = async (req: Request, res: Response) => {
     try {
         const prisma = new PrismaClient();
@@ -39,6 +39,73 @@ export const createTopic = async (req: Request, res: Response) => {
         }
     }
 }
+
+
+
+
+
+
+
+export const editTopic = async (req: Request, res: Response) => {
+  const topicId = parseInt(req.params.id, 10); // Use parseInt to ensure proper number conversion
+
+  if (isNaN(topicId)) {
+    return res.status(400).json({
+      code: 400,
+      data: [],
+      message: "Invalid topic ID",
+      other: null,
+    });
+  }
+  // const topicId = Number(req.params.id);
+
+  if (isNaN(topicId)) {
+    return res
+      .status(StatusCode.BAD_REQUEST)
+      .json(jsonResponse({ code: StatusCode.BAD_REQUEST, data: [], message: "Invalid topic ID" }));
+  }
+
+  const { error, value } = topicSchema.validate(req.body, { abortEarly: false });
+
+  if (error) {
+    return res.status(StatusCode.BAD_REQUEST).json(
+      jsonResponse({
+        code: StatusCode.BAD_REQUEST,
+        data: [],
+        message: error.details.map((d) => d.message),
+      })
+    );
+  }
+
+  try {
+    const updatedTopic = await prisma.subjectTopic.update({
+      where: { id: topicId },
+      data: {
+        topicName: value.topicName,
+        subject: { connect: { id: value.subjectId } },
+        active: value.active,
+      },
+    });
+
+    res.status(StatusCode.OK).json(
+      jsonResponse({
+        code: StatusCode.OK,
+        data: [updatedTopic],
+        message: "Topic updated successfully",
+      })
+    );
+  } catch (err) {
+    console.error("Error updating topic:", err);
+    res.status(StatusCode.INTERNAL_SERVER_ERROR).json(
+      jsonResponse({
+        code: StatusCode.INTERNAL_SERVER_ERROR,
+        data: [],
+        message: "Error updating topic",
+      })
+    );
+  }
+};
+
 
 
 export const getTopic = async (req: Request, res: Response) => {

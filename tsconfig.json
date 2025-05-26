@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2020", // Choose an appropriate ES version
-    "module": "ESNext", // CommonJS for Node.js
+    "module": "CommonJS", // CommonJS for Node.js
     "strict": true, // Enforce strict typing
     "esModuleInterop": true, // Enable importing ES modules
     "skipLibCheck": true, // Skip type checking of declaration files

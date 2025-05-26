@@ -1,4 +1,4 @@
-import { createBulkTopicQuestions, createTopicQuestion, deleteTopicQuestion, getTopicQuestion, updateTopicQuestion, updateTopicQuestionById } from "../controllers/topicQuestionController"; 
+import { createBulkTopicQuestions, createTopicQuestion, deleteTopicQuestion, getTopicQuestion, updateTopicQuestion, updateTopicQuestionById } from "../controllers/topicQuestionController"
 import { Router } from "express";  
 
 

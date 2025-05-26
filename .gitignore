@@ -6,4 +6,5 @@ tmp/
 temp/
 logs/
 .env
+node.pid
 dist/

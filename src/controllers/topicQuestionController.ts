@@ -77,13 +77,14 @@ export const createBulkTopicQuestions = async (req: Request, res: Response) => {
     const prisma = new PrismaClient();
 
     if (!Array.isArray(req.body)) {
-      return res.status(StatusCode.BAD_REQUEST).json(
+      res.status(StatusCode.BAD_REQUEST).json(
         jsonResponse({
           code: StatusCode.BAD_REQUEST,
           data: [],
           message: `"value" must be an array of questions.`,
         })
       );
+      return
     }
 
     const validationResults = req.body.map((q: any) =>
@@ -97,13 +98,14 @@ export const createBulkTopicQuestions = async (req: Request, res: Response) => {
       .filter(Boolean);
 
     if (errors.length > 0) {
-      return res.status(StatusCode.BAD_REQUEST).json(
+      res.status(StatusCode.BAD_REQUEST).json(
         jsonResponse({
           code: StatusCode.BAD_REQUEST,
           data: [],
           message: errors.filter((error) => error !== null),
         })
       );
+      return
     }
 
     const preparedData = validationResults.map((result) => {
@@ -140,7 +142,7 @@ export const createBulkTopicQuestions = async (req: Request, res: Response) => {
       }
     }
 
-    return res.status(StatusCode.CREATED).json(
+    res.status(StatusCode.CREATED).json(
       jsonResponse({
         code: StatusCode.CREATED,
         data: insertedQuestions,
@@ -149,7 +151,7 @@ export const createBulkTopicQuestions = async (req: Request, res: Response) => {
     );
   } catch (error) {
     console.error("Unexpected error:", error);
-    return res.status(StatusCode.INTERNAL_SERVER_ERROR).json(
+    res.status(StatusCode.INTERNAL_SERVER_ERROR).json(
       jsonResponse({
         code: StatusCode.INTERNAL_SERVER_ERROR,
         data: [],
@@ -157,6 +159,7 @@ export const createBulkTopicQuestions = async (req: Request, res: Response) => {
       })
     );
   }
+  return
 };
 
 
@@ -168,25 +171,27 @@ export const updateTopicQuestionById = async (req: Request, res: Response) => {
     const questionId = Number(req.params.id);
 
     if (isNaN(questionId)) {
-      return res.status(StatusCode.BAD_REQUEST).json(
+      res.status(StatusCode.BAD_REQUEST).json(
         jsonResponse({
           code: StatusCode.BAD_REQUEST,
           data: [],
           message: `"id" must be a valid number.`,
         })
       );
+      return
     }
 
     const { error, value } = topicQuestionSchema.validate(req.body, { abortEarly: false });
 
     if (error) {
-      return res.status(StatusCode.BAD_REQUEST).json(
+      res.status(StatusCode.BAD_REQUEST).json(
         jsonResponse({
           code: StatusCode.BAD_REQUEST,
           data: [],
           message: error.details,
         })
       );
+      return
     }
 
     const updatedQuestion = await prisma.topicQuestion.update({
@@ -206,7 +211,7 @@ export const updateTopicQuestionById = async (req: Request, res: Response) => {
       },
     });
 
-    return res.status(StatusCode.OK).json(
+    res.status(StatusCode.OK).json(
       jsonResponse({
         code: StatusCode.OK,
         data: [updatedQuestion], // Send as an array
@@ -217,16 +222,17 @@ export const updateTopicQuestionById = async (req: Request, res: Response) => {
     console.error("Update error:", error);
 
     if (error.code === "P2025") {
-      return res.status(StatusCode.NOT_FOUND).json(
+      res.status(StatusCode.NOT_FOUND).json(
         jsonResponse({
           code: StatusCode.NOT_FOUND,
           data: [],
           message: "Question not found.",
         })
       );
+      return
     }
 
-    return res.status(StatusCode.INTERNAL_SERVER_ERROR).json(
+    res.status(StatusCode.INTERNAL_SERVER_ERROR).json(
       jsonResponse({
         code: StatusCode.INTERNAL_SERVER_ERROR,
         data: [],
@@ -234,6 +240,7 @@ export const updateTopicQuestionById = async (req: Request, res: Response) => {
       })
     );
   }
+  return
 };
 
 
@@ -380,9 +387,17 @@ export const updateTopicQuestion = async (req: Request, res: Response) => {
         answerD: joiResult.value.answerD,
         answerCorrect: joiResult.value.answerCorrect,
         questionYear: joiResult.value.questionYear,
-        topic: { connect: { id: joiResult.value.topicId } },
-        round: { connect: { id: joiResult.value.roundId } },
-        active: joiResult.value.active,
+        ...(typeof joiResult.value.topicId === 'number' && {
+          topic: {
+            connect: { id: joiResult.value.topicId },
+          },
+        }),
+        ...(typeof joiResult.value.roundId === 'number' && {
+          round: {
+            connect: { id: joiResult.value.roundId },
+          },
+        }),
+        active: joiResult.value.active
       },
     });
 

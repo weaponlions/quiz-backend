@@ -45,7 +45,7 @@ export type Round = {
   
 
   export type TopicQuestion = {
-    id: number;
+    id: number | undefined | null;
     questionText: string;
     questionTitle: string;
     answerA: string;
@@ -53,8 +53,8 @@ export type Round = {
     answerC: string;
     answerD: string;
     answerCorrect: correctAnswerEnum;
-    topicId: number;
-    roundId: number;
+    topicId: number | null;
+    roundId: number | null;
     createdAt: Date;
     updatedAt: Date;
     active: boolean;

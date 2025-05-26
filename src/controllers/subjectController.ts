@@ -109,7 +109,7 @@ export const getSubject = async (req: Request, res: Response) => {
         const { error: activeError, value: activeValue } = Joi.boolean().truthy("true").falsy("false").validate(active);
   
         if (nameError && subjectName) {
-          return res.status(StatusCode.BAD_REQUEST).json(
+          res.status(StatusCode.BAD_REQUEST).json(
             jsonResponse<[]>({
               code: StatusCode.BAD_REQUEST,
               data: [],
@@ -117,10 +117,11 @@ export const getSubject = async (req: Request, res: Response) => {
               other: nameError.details,
             })
           );
+          return
         }
   
         if (examError && examId) {
-          return res.status(StatusCode.BAD_REQUEST).json(
+          res.status(StatusCode.BAD_REQUEST).json(
             jsonResponse<[]>({
               code: StatusCode.BAD_REQUEST,
               data: [],
@@ -128,10 +129,11 @@ export const getSubject = async (req: Request, res: Response) => {
               other: examError.details,
             })
           );
+          return
         }
   
         if (activeError && active !== undefined) {
-          return res.status(StatusCode.BAD_REQUEST).json(
+          res.status(StatusCode.BAD_REQUEST).json(
             jsonResponse<[]>({
               code: StatusCode.BAD_REQUEST,
               data: [],
@@ -139,6 +141,7 @@ export const getSubject = async (req: Request, res: Response) => {
               other: activeError.details,
             })
           );
+          return
         }
   
         if (!nameError && subjectName) {
@@ -172,7 +175,7 @@ export const getSubject = async (req: Request, res: Response) => {
   
       const subjects = await prisma.examSubject.findMany(query);
   
-      return res.status(StatusCode.OK).json(
+      res.status(StatusCode.OK).json(
         jsonResponse<Subject[]>({
           code: StatusCode.OK,
           data: subjects,
@@ -181,7 +184,7 @@ export const getSubject = async (req: Request, res: Response) => {
       );
     } catch (error) {
       console.error("Unexpected error in getSubject:", error);
-      return res.status(StatusCode.INTERNAL_SERVER_ERROR).json(
+      res.status(StatusCode.INTERNAL_SERVER_ERROR).json(
         jsonResponse<[]>({
           code: StatusCode.INTERNAL_SERVER_ERROR,
           data: [],
@@ -189,5 +192,6 @@ export const getSubject = async (req: Request, res: Response) => {
         })
       );
     }
+    return
   };
   

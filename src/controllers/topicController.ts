@@ -50,31 +50,34 @@ export const editTopic = async (req: Request, res: Response) => {
   const topicId = parseInt(req.params.id, 10); // Use parseInt to ensure proper number conversion
 
   if (isNaN(topicId)) {
-    return res.status(400).json({
+    res.status(400).json({
       code: 400,
       data: [],
       message: "Invalid topic ID",
       other: null,
     });
+    return
   }
   // const topicId = Number(req.params.id);
 
   if (isNaN(topicId)) {
-    return res
+    res
       .status(StatusCode.BAD_REQUEST)
       .json(jsonResponse({ code: StatusCode.BAD_REQUEST, data: [], message: "Invalid topic ID" }));
+      return
   }
 
   const { error, value } = topicSchema.validate(req.body, { abortEarly: false });
 
   if (error) {
-    return res.status(StatusCode.BAD_REQUEST).json(
+    res.status(StatusCode.BAD_REQUEST).json(
       jsonResponse({
         code: StatusCode.BAD_REQUEST,
         data: [],
         message: error.details.map((d) => d.message),
       })
     );
+    return
   }
 
   try {
@@ -104,6 +107,7 @@ export const editTopic = async (req: Request, res: Response) => {
       })
     );
   }
+  return
 };
 
 

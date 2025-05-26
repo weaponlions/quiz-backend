@@ -24,5 +24,5 @@ server.listen(PORT, async (err) => {
         process.exit(1);        
     }
     
-    console.log(`Server runing on port : ${PORT}`);
+    console.log(`Server running on port : ${PORT}`);
 })

@@ -53,19 +53,19 @@ export const authSchema = Joi.object({
   });
   
 
-  export const topicQuestionSchema = Joi.object<TopicQuestion>({
-    questionText: Joi.string().min(5).required(),
-    questionTitle: Joi.string().allow('').default("").optional(),
-    answerA: Joi.string().required(),
-    answerB: Joi.string().required(),
-    answerC: Joi.string().required(),
-    answerD: Joi.string().required(),
-    answerCorrect: Joi.string().valid("A", "B", "C", "D").required(),
-    topicId: Joi.number().allow(null).optional(),
-    roundId: Joi.number().optional(),
-    questionYear: Joi.string().allow('').length(4).optional(),
-    active: Joi.boolean().optional(),
-  });
+    export const topicQuestionSchema = Joi.object<TopicQuestion>({
+      questionText: Joi.string().min(5).required(),
+      questionTitle: Joi.string().allow('').default("").optional(),
+      answerA: Joi.string().required(),
+      answerB: Joi.string().required(),
+      answerC: Joi.string().required(),
+      answerD: Joi.string().required(),
+      answerCorrect: Joi.string().valid("A", "B", "C", "D").required(),
+      topicId: Joi.number().allow(null).optional(),
+      roundId: Joi.number().optional(),
+      questionYear: Joi.string().allow('').length(4).optional(),
+      active: Joi.boolean().optional(),
+    });
 
   export const userSchema = Joi.object<User>({
     username: Joi.string().min(5).max(255).required(),

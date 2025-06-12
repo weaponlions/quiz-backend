@@ -3,6 +3,7 @@ import { topicQuestionSchema } from "../validators/schemaValidator";
 import { PrismaClient } from "@prisma/client";
 import Joi from "joi";
 import { StatusCode, TopicQuestion } from "../types";
+import mammoth from "mammoth";
 import { isObjectEmpty, jsonResponse } from "../helpers";
 
 export const createTopicQuestion = async (req: Request, res: Response) => {
@@ -455,6 +456,272 @@ export const deleteTopicQuestion = async (req: Request, res: Response) => {
         code: StatusCode.INTERNAL_SERVER_ERROR,
         data: [],
         message: "An unexpected error occurred.",
+      })
+    );
+  }
+};
+
+
+
+
+
+// export const createTopicQuestionsFromDocx = async (req: Request, res: Response) => {
+//   const prisma = new PrismaClient();
+
+//   try {
+//     if (!req.file) {
+//       return res.status(StatusCode.BAD_REQUEST).json(
+//         jsonResponse({
+//           code: StatusCode.BAD_REQUEST,
+//           data: [],
+//           message: "No .docx file uploaded.",
+//         })
+//       );
+//     }
+
+//     const result = await mammoth.extractRawText({ path: req.file.path });
+//     const lines = result.value.split("\n").map((l) => l.trim()).filter(Boolean);
+
+//     const questions: any[] = [];
+//     let current: any = {
+//       questionTitle: "",
+//       questionText: "",
+//       answerA: "",
+//       answerB: "",
+//       answerC: "",
+//       answerD: "",
+//       answerCorrect: "",
+//       questionYear: new Date().getFullYear(),
+//       topicId: Number(req.body.topicId) || 1,
+//       roundId: Number(req.body.roundId) || 1,
+//       active: true,
+//     };
+
+//     for (const line of lines) {
+//       if (/^\d+\./.test(line)) {
+//         if (current.questionText) questions.push({ ...current });
+//         current = {
+//           questionTitle: "",
+//           questionText: line,
+//           answerA: "",
+//           answerB: "",
+//           answerC: "",
+//           answerD: "",
+//           answerCorrect: "",
+//           questionYear: new Date().getFullYear(),
+//           topicId: Number(req.body.topicId) || 1,
+//           roundId: Number(req.body.roundId) || 1,
+//           active: true,
+//         };
+//       } else if (/^A[\.\)]/i.test(line)) {
+//         current.answerA = line;
+//       } else if (/^B[\.\)]/i.test(line)) {
+//         current.answerB = line;
+//       } else if (/^C[\.\)]/i.test(line)) {
+//         current.answerC = line;
+//       } else if (/^D[\.\)]/i.test(line)) {
+//         current.answerD = line;
+//       } else if (/^Answer[:：]/i.test(line)) {
+//         current.answerCorrect = line.split(/[:：]/)[1].trim();
+//       } else {
+//         current.questionTitle += line + " ";
+//       }
+//     }
+
+//     if (current.questionText) questions.push({ ...current });
+
+//     // Validate
+//     const validationResults = questions.map((q) =>
+//       topicQuestionSchema.validate(q, { abortEarly: false })
+//     );
+
+//     const errors = validationResults
+//       .map((r, i) => (r.error ? { index: i, error: r.error.details } : null))
+//       .filter(Boolean);
+
+//     if (errors.length > 0) {
+//       return res.status(StatusCode.BAD_REQUEST).json(
+//         jsonResponse({
+//           code: StatusCode.BAD_REQUEST,
+//           data: [],
+//           message: errors,
+//         })
+//       );
+//     }
+
+//     // Prepare for DB
+//     const prepared = validationResults.map((r) => {
+//       const q = r.value;
+//       return {
+//         questionText: q.questionText,
+//         questionTitle: q.questionTitle || "",
+//         answerA: q.answerA,
+//         answerB: q.answerB,
+//         answerC: q.answerC,
+//         answerD: q.answerD,
+//         answerCorrect: q.answerCorrect,
+//         questionYear: q.questionYear,
+//         topicId: Number(q.topicId),
+//         roundId: Number(q.roundId),
+//         active: Boolean(q.active),
+//       };
+//     });
+
+//     const inserted = [];
+
+//     for (const q of prepared) {
+//       try {
+//         const created = await prisma.topicQuestion.create({ data: q });
+//         inserted.push(created);
+//       } catch (err: any) {
+//         if (err.code === "P2002") {
+//           // skip duplicate
+//         } else {
+//           console.error("DB insert error", err);
+//           throw err;
+//         }
+//       }
+//     }
+
+//     return res.status(StatusCode.CREATED).json(
+//       jsonResponse({
+//         code: StatusCode.CREATED,
+//         data: inserted,
+//         message: `${inserted.length} questions inserted.`,
+//       })
+//     );
+//   } catch (error) {
+//     console.error("Unexpected error:", error);
+//     return res.status(StatusCode.INTERNAL_SERVER_ERROR).json(
+//       jsonResponse({
+//         code: StatusCode.INTERNAL_SERVER_ERROR,
+//         data: [],
+//         message: "Error processing .docx upload.",
+//       })
+//     );
+//   }
+// };
+
+
+
+
+export const createTopicQuestionsFromDocx = async (req: Request, res: Response) => {
+  const prisma = new PrismaClient();
+
+  try {
+    if (!req.file) {
+      return res.status(StatusCode.BAD_REQUEST).json(
+        jsonResponse({
+          code: StatusCode.BAD_REQUEST,
+          data: [],
+          message: "No .docx file uploaded.",
+        })
+      );
+    }
+
+    const result = await mammoth.extractRawText({ path: req.file.path });
+    const lines = result.value.split("\n").map((l) => l.trim()).filter(Boolean);
+
+    const questions: any[] = [];
+    let current: any = {
+      questionTitle: "",
+      questionText: "",
+      answerA: "",
+      answerB: "",
+      answerC: "",
+      answerD: "",
+      answerCorrect: "",
+      questionYear: String(new Date().getFullYear()),
+      topicId: req.body.topicId ? Number(req.body.topicId) : null,
+      roundId: req.body.roundId ? Number(req.body.roundId) : undefined,
+      active: true,
+    };
+
+    for (const line of lines) {
+      if (/^\d+\./.test(line)) {
+        if (current.questionText) questions.push({ ...current });
+        current = {
+          questionTitle: "",
+          questionText: line,
+          answerA: "",
+          answerB: "",
+          answerC: "",
+          answerD: "",
+          answerCorrect: "",
+          questionYear: String(new Date().getFullYear()),
+          topicId: req.body.topicId ? Number(req.body.topicId) : null,
+          roundId: req.body.roundId ? Number(req.body.roundId) : undefined,
+          active: true,
+        };
+      } else if (/^A[\.\)]/i.test(line)) {
+        current.answerA = line.replace(/^A[\.\)]\s*/, "");
+      } else if (/^B[\.\)]/i.test(line)) {
+        current.answerB = line.replace(/^B[\.\)]\s*/, "");
+      } else if (/^C[\.\)]/i.test(line)) {
+        current.answerC = line.replace(/^C[\.\)]\s*/, "");
+      } else if (/^D[\.\)]/i.test(line)) {
+        current.answerD = line.replace(/^D[\.\)]\s*/, "");
+      } else if (/^Answer[:：]/i.test(line)) {
+        current.answerCorrect = line.split(/[:：]/)[1].trim().toUpperCase();
+      } else {
+        current.questionTitle += line + " ";
+      }
+    }
+
+    if (current.questionText) questions.push({ ...current });
+
+    // Joi Validation
+    const validationResults = questions.map((q) =>
+      topicQuestionSchema.validate(q, { abortEarly: false })
+    );
+
+    const errors = validationResults
+      .map((r, i) => (r.error ? { index: i + 1, error: r.error.details } : null))
+      .filter(Boolean);
+
+    if (errors.length > 0) {
+      return res.status(StatusCode.BAD_REQUEST).json(
+        jsonResponse({
+          code: StatusCode.BAD_REQUEST,
+          data: [],
+          message: errors,
+        })
+      );
+    }
+
+    // Prepare final data for DB
+    const prepared = validationResults.map((r) => r.value);
+
+    const inserted = [];
+
+    for (const q of prepared) {
+      try {
+        const created = await prisma.topicQuestion.create({ data: q });
+        inserted.push(created);
+      } catch (err: any) {
+        if (err.code === "P2002") {
+          // Skip duplicates
+          continue;
+        } else {
+          console.error("DB insert error:", err);
+        }
+      }
+    }
+
+    return res.status(StatusCode.CREATED).json(
+      jsonResponse({
+        code: StatusCode.CREATED,
+        data: inserted,
+        message: `${inserted.length} questions inserted.`,
+      })
+    );
+  } catch (error) {
+    console.error("Unexpected error:", error);
+    return res.status(StatusCode.INTERNAL_SERVER_ERROR).json(
+      jsonResponse({
+        code: StatusCode.INTERNAL_SERVER_ERROR,
+        data: [],
+        message: "Error processing .docx upload.",
       })
     );
   }
